@@ -19,23 +19,20 @@ pipeline {
     stages {
         stage('Checkout Code') {
             steps {
-                
-                    getcheckoutgroovy(
-                        branch: 'main',
-                        url:'https://github.com/abdelhaqell/test_jenkins.git'
-                        )
-                
+                getcheckoutgroovy(
+                    branch: 'main',
+                    url:'https://github.com/abdelhaqell/test_jenkins.git'
+                )
             }
         }
-    
 
         stage('Build') {
             steps {
                 sh '''
-                   cd $WORKSPACE
-                   pwd
-                   ls 
-                   mvn clean install
+                    cd $WORKSPACE
+                    pwd
+                    ls 
+                    mvn clean install
                 '''
             }
         }
@@ -43,8 +40,8 @@ pipeline {
         stage('Generate Artifact') {
             steps {
                 sh '''
-                   cd $WORKSPACE
-                   mvn package
+                    cd $WORKSPACE
+                    mvn package
                 '''
             }
         }
@@ -52,21 +49,18 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                   cd $WORKSPACE
-                   docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
+                    cd $WORKSPACE
+                    docker build -t ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG} .
                 '''
-                  }
+            }
         }
 
         stage('Login to Docker Registry') {
             steps {
-                script {
-                    withCredentials([usernamePassword(credentialsId: 'id2', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
-                    }
-                }
+                dockerLogin()  
             }
         }
+
         stage('Push Docker Image') {
             steps {
                 script {
@@ -74,11 +68,11 @@ pipeline {
                 }
             }
         }
+
         stage('Cleanup') {
-                steps {
-                    sh "docker rmi ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
-                }
+            steps {
+                sh "docker rmi ${DOCKER_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_TAG}"
+            }
         }
     }
-        
 }
