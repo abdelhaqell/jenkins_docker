@@ -57,7 +57,7 @@ pipeline {
 
         stage('Login to Docker Registry') {
             steps {
-                dockerLogin()  
+                dockerLogin(credentialsId: 'id2')  // Passing the credentialsId to the function
             }
         }
 
